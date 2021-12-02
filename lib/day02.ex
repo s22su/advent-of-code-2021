@@ -37,9 +37,5 @@ defmodule AdventOfCode.Day02 do
     |> repeat()
   )
 
-  defp preprocess_input(input) do
-    {:ok, parsed_input, _, _, _, _} = parse_lines(input)
-
-    parsed_input
-  end
+  defp preprocess_input(input), do: parse_lines(input) |> elem(1)
 end
