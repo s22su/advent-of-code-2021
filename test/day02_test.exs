@@ -3,14 +3,7 @@ defmodule AdventOfCode.Day02.P1Test do
 
   describe "part1/1" do
     test "solves the puzzle" do
-      input = "
-      forward 5
-      down 5
-      forward 8
-      up 3
-      down 8
-      forward 2
-    "
+      input = File.read!("test/input_data/d02.txt")
 
       assert AdventOfCode.Day02.part1(input) == 150
     end
@@ -18,14 +11,7 @@ defmodule AdventOfCode.Day02.P1Test do
 
   describe "part2/1" do
     test "solves the puzzle" do
-      input = "
-      forward 5
-      down 5
-      forward 8
-      up 3
-      down 8
-      forward 2
-    "
+      input = File.read!("test/input_data/d02.txt")
 
       assert AdventOfCode.Day02.part2(input) == 900
     end
