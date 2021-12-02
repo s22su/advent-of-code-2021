@@ -29,19 +29,19 @@ defmodule AdventOfCode.Day02 do
   direction = choice([string("up"), string("down"), string("forward")])
   delta = ascii_string([?0..?9], min: 1) |> map({String, :to_integer, []})
 
-  parser =
+  defparsec(
+    :parse_lines,
     direction
     |> ignore(string(" "))
     |> concat(delta)
-
-  defparsec(:parse_line, parser)
+    |> ignore(string("\n"))
+    |> wrap()
+    |> repeat()
+  )
 
   defp preprocess_input(input) do
-    input
-    |> String.trim()
-    |> String.split("\n")
-    |> Enum.map(&String.trim/1)
-    |> Enum.map(&parse_line/1)
-    |> Enum.map(fn {:ok, result, _, _, _, _} -> result end)
+    {:ok, parsed_input, _, _, _, _} = parse_lines(input)
+
+    parsed_input
   end
 end
