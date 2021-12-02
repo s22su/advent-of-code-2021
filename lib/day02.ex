@@ -2,6 +2,8 @@ defmodule AdventOfCode.Day02 do
   @moduledoc false
   use AdventOfCode
 
+  import NimbleParsec
+
   def part1(input) do
     %{x: x, y: y} =
       preprocess_input(input)
@@ -28,15 +30,22 @@ defmodule AdventOfCode.Day02 do
   defp move2(["forward", delta], %{x: x, y: y, aim: aim} = curr),
     do: Map.merge(curr, %{x: x + delta, y: y + aim * delta})
 
+  direction = choice([string("up"), string("down"), string("forward")])
+  delta = ascii_string([?0..?9], min: 1) |> map({String, :to_integer, []})
+
+  parser =
+    direction
+    |> ignore(string(" "))
+    |> concat(delta)
+
+  defparsec(:parse_line, parser)
+
   defp preprocess_input(input) do
     input
     |> String.trim()
     |> String.split("\n")
     |> Enum.map(&String.trim/1)
-    |> Enum.map(fn ins ->
-      [direction, delta] = String.split(ins, " ")
-
-      [direction, String.to_integer(delta)]
-    end)
+    |> Enum.map(&parse_line/1)
+    |> Enum.map(fn {:ok, result, _, _, _, _} -> result end)
   end
 end
