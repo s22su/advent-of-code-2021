@@ -1,4 +1,4 @@
-defmodule AdventOfCode.Day01.P1Test do
+defmodule AdventOfCode.Day01Test do
   use ExUnit.Case, async: true
 
   describe "part1/1" do
