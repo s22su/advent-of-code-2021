@@ -1,15 +1,12 @@
 defmodule AdventOfCode.Day01 do
   @moduledoc false
+  use AdventOfCode
 
-  alias AdventOfCode.Helpers
-
-  # AdventOfCode.Helpers.read_input("01") |> AdventOfCode.Day01.part1()
   def part1(input) do
     preprocess_input(input)
     |> calc_increases()
   end
 
-  # AdventOfCode.Helpers.read_input("01") |> AdventOfCode.Day01.part2()
   def part2(input) do
     preprocess_input(input)
     |> calc_windows()
@@ -54,7 +51,10 @@ defmodule AdventOfCode.Day01 do
 
   defp preprocess_input(input) do
     input
-    |> Helpers.input_string_to_integer_list()
+    |> String.split("\n")
+    |> Enum.map(&String.trim/1)
+    |> Enum.filter(fn el -> el !== "" end)
+    |> Enum.map(&String.to_integer/1)
     |> Enum.with_index()
   end
 end

@@ -1,7 +1,7 @@
 defmodule AdventOfCode.Day02 do
   @moduledoc false
+  use AdventOfCode
 
-  # AdventOfCode.Helpers.read_input("02") |> AdventOfCode.Day02.part1()
   def part1(input) do
     %{x: x, y: y} =
       preprocess_input(input)
@@ -10,7 +10,6 @@ defmodule AdventOfCode.Day02 do
     x * y
   end
 
-  # AdventOfCode.Helpers.read_input("02") |> AdventOfCode.Day02.part2()
   def part2(input) do
     %{x: x, y: y} =
       preprocess_input(input)
