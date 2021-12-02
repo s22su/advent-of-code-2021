@@ -30,9 +30,9 @@ defmodule AdventOfCode.Day02 do
 
   defp preprocess_input(input) do
     input
+    |> String.trim()
     |> String.split("\n")
     |> Enum.map(&String.trim/1)
-    |> Enum.filter(fn el -> el !== "" end)
     |> Enum.map(fn ins ->
       [direction, delta] = String.split(ins, " ")
 
