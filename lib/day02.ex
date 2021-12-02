@@ -5,19 +5,15 @@ defmodule AdventOfCode.Day02 do
   import NimbleParsec
 
   def part1(input) do
-    %{x: x, y: y} =
-      preprocess_input(input)
-      |> Enum.reduce(%{x: 0, y: 0}, fn instruction, acc -> move1(instruction, acc) end)
-
-    x * y
+    preprocess_input(input)
+    |> Enum.reduce(%{x: 0, y: 0}, fn instruction, acc -> move1(instruction, acc) end)
+    |> (fn %{x: x, y: y} -> x * y end).()
   end
 
   def part2(input) do
-    %{x: x, y: y} =
-      preprocess_input(input)
-      |> Enum.reduce(%{x: 0, y: 0, aim: 0}, fn instruction, acc -> move2(instruction, acc) end)
-
-    x * y
+    preprocess_input(input)
+    |> Enum.reduce(%{x: 0, y: 0, aim: 0}, fn instruction, acc -> move2(instruction, acc) end)
+    |> (fn %{x: x, y: y} -> x * y end).()
   end
 
   defp move1(["up", delta], %{y: y} = curr), do: Map.put(curr, :y, y - delta)
