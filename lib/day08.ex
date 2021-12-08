@@ -4,7 +4,7 @@ defmodule AdventOfCode.Day08 do
 
   def part1(input) do
     preprocess_input(input)
-    |> Enum.map(&elem(&1, 1))
+    |> Enum.map(&Enum.at(&1, 1))
     |> List.flatten()
     |> Enum.map(&String.length/1)
     |> Enum.frequencies()
@@ -14,69 +14,43 @@ defmodule AdventOfCode.Day08 do
   end
 
   def part2(input) do
-    # 0 = 6 seg
-    # 1 = 2 seg
-    # 2 = 5 seg
-    # 3 = 5 seg
-    # 4 = 4 seg
-    # 5 = 5 seg
-    # 6 = 6 seg
-    # 7 = 3 seg
-    # 8 = 7 seg
-    # 9 = 6 seg
-
     preprocess_input(input)
-    |> Enum.map(fn {signals, outputs} ->
-      s =
+    |> Enum.map(fn [signals, outputs] ->
+      signals =
         Enum.map(signals, fn s ->
-          String.graphemes(s)
-          |> Enum.sort()
+          String.graphemes(s) |> Enum.sort()
         end)
 
-      o =
+      outputs =
         Enum.map(outputs, fn o ->
           String.graphemes(o) |> Enum.sort()
         end)
 
-      all_uniq = (s ++ o) |> Enum.uniq() |> Enum.sort(&(length(&1) <= length(&2)))
+      all_numbers = Enum.uniq(signals ++ outputs)
 
-      {s, o, all_uniq}
+      {signals, outputs, all_numbers}
     end)
-    |> Enum.map(fn {s, o, all} ->
+    |> Enum.map(fn {signals, outputs, all_numbers} ->
       mappings =
-        Enum.reduce(all, %{}, fn segment, acc ->
-          new_acc =
-            cond do
-              length(segment) == 2 -> Map.put(acc, 1, segment)
-              length(segment) == 4 -> Map.put(acc, 4, segment)
-              length(segment) == 3 -> Map.put(acc, 7, segment)
-              length(segment) == 7 -> Map.put(acc, 8, segment)
-              true -> acc
-            end
-
-          new_acc
+        Enum.reduce(all_numbers, %{}, fn segment, acc ->
+          cond do
+            length(segment) == 2 -> Map.put(acc, 1, segment)
+            length(segment) == 4 -> Map.put(acc, 4, segment)
+            length(segment) == 3 -> Map.put(acc, 7, segment)
+            length(segment) == 7 -> Map.put(acc, 8, segment)
+            true -> acc
+          end
         end)
 
-      {s, o, mappings}
+      {signals, outputs, mappings}
     end)
-    |> Enum.map(fn {s, o, mappings} ->
+    |> Enum.map(fn {signals, outputs, mappings} ->
       one = Map.get(mappings, 1)
       four = Map.get(mappings, 4)
       # seven = Map.get(mappings, 7)
       eight = Map.get(mappings, 8)
 
-      # top_segement = seven -- one
-      top_left_and_middle_segments = four -- one
-      # bottom_left_and_bottom_segments = (eight -- seven) -- four
-
-      two_three_or_five =
-        Enum.filter(s, fn c ->
-          # numbers 2, 3 or 5
-          length(c) == 5
-        end)
-
-      # 2 + 5 = 8
-      # so the remaining one is 3
+      two_three_or_five = Enum.filter(signals, &(length(&1) == 5))
 
       n1 = Enum.at(two_three_or_five, 0)
       n2 = Enum.at(two_three_or_five, 1)
@@ -84,33 +58,26 @@ defmodule AdventOfCode.Day08 do
 
       three =
         cond do
-          (n1 ++ n2) |> Enum.uniq() |> Enum.sort() == Enum.sort(eight) -> n3
-          (n1 ++ n3) |> Enum.uniq() |> Enum.sort() == Enum.sort(eight) -> n2
-          (n2 ++ n3) |> Enum.uniq() |> Enum.sort() == Enum.sort(eight) -> n1
+          # 2 + 5 = 8, so the remaining one is 3
+          sum_segements(n1, n2) == eight -> n3
+          sum_segements(n1, n3) == eight -> n2
+          sum_segements(n2, n3) == eight -> n1
         end
 
-      top_left_segment = four -- three
+      zero =
+        sub_segements(
+          eight,
+          sub_segements(
+            sub_segements(four, one),
+            sub_segements(four, three)
+          )
+        )
 
-      # IO.inspect(top_left_segment, label: "top_left_segment")
-      # IO.inspect(top_left_and_middle_segments, label: "top_left_and_middle_segments")
+      nine = sum_segements(three, sub_segements(four, one))
 
-      middle_segment = top_left_and_middle_segments -- top_left_segment
+      six = Enum.filter(signals, &(length(&1) == 6 && &1 != zero && &1 != nine)) |> List.flatten()
 
-      # IO.inspect(middle_segment, label: "middle_segment")
-
-      zero = eight -- middle_segment
-
-      nine = (three ++ top_left_and_middle_segments) |> Enum.uniq()
-
-      # 6
-      six =
-        Enum.filter(s, fn c ->
-          length(c) == 6 && Enum.sort(c) != Enum.sort(zero) && Enum.sort(c) != Enum.sort(nine)
-        end)
-        |> List.flatten()
-
-      # 2 and 5 are missing
-      two_or_five = Enum.filter(two_three_or_five, fn c -> c !== three end)
+      two_or_five = Enum.reject(two_three_or_five, &(&1 == three))
 
       n1 = Enum.at(two_or_five, 0)
       n2 = Enum.at(two_or_five, 1)
@@ -119,28 +86,26 @@ defmodule AdventOfCode.Day08 do
       # 5 + 6 = 6
       five =
         cond do
-          (n1 ++ six) |> Enum.uniq() |> Enum.sort() == Enum.sort(six) -> n1
-          (n2 ++ six) |> Enum.uniq() |> Enum.sort() == Enum.sort(six) -> n2
+          sum_segements(n1, six) == six -> n1
+          sum_segements(n2, six) == six -> n2
         end
 
-      two = Enum.filter(two_or_five, fn c -> c !== five end) |> List.flatten()
+      two = Enum.reject(two_or_five, &(&1 == five)) |> List.flatten()
 
       final_mappings =
         mappings
-        |> Map.put(0, Enum.sort(zero))
-        |> Map.put(3, Enum.sort(three))
-        |> Map.put(9, Enum.sort(nine))
-        |> Map.put(6, Enum.sort(six))
-        |> Map.put(2, Enum.sort(two))
-        |> Map.put(5, Enum.sort(five))
+        |> Map.put(0, zero)
+        |> Map.put(2, two)
+        |> Map.put(3, three)
+        |> Map.put(5, five)
+        |> Map.put(6, six)
+        |> Map.put(9, nine)
 
-      {o, final_mappings}
+      {outputs, final_mappings}
     end)
-    |> Enum.map(fn {o, mappings} ->
-      Enum.reduce(o, [], fn num, acc ->
-        n = Enum.filter(mappings, fn {_, v} -> v == num end) |> Enum.at(0) |> elem(0)
-
-        acc ++ [n]
+    |> Enum.map(fn {outputs, mappings} ->
+      Enum.reduce(outputs, [], fn num, acc ->
+        acc ++ [Enum.filter(mappings, fn {_, v} -> v == num end) |> Enum.at(0) |> elem(0)]
       end)
       |> Enum.join()
     end)
@@ -148,18 +113,17 @@ defmodule AdventOfCode.Day08 do
     |> Enum.sum()
   end
 
+  defp sum_segements(s1, s2), do: (s1 ++ s2) |> Enum.uniq() |> Enum.sort()
+  defp sub_segements(s1, s2), do: (s1 -- s2) |> Enum.sort()
+
   defp preprocess_input(input) do
     input
     |> String.trim()
     |> String.replace(" |\n", "|")
     |> String.split("\n")
-    |> Enum.map(fn s ->
-      [f, s] = String.split(s, "|")
-
-      f = String.split(f)
-      s = String.split(s)
-
-      {f, s}
+    |> Enum.map(fn line ->
+      String.split(line, "|")
+      |> Enum.map(&String.split/1)
     end)
   end
 end
